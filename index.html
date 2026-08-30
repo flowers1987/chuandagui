@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#ff6b81" />
+
+  <!-- PWA / 添加到主屏幕 -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="穿搭柜" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="format-detection" content="telephone=no" />
+
+  <title>穿搭柜</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="phone">
+    <!-- 顶部导航栏 -->
+    <header class="appbar" id="appbar">
+      <button class="appbar-back" id="appbarBack" hidden>‹</button>
+      <h1 class="appbar-title" id="appbarTitle">穿搭柜</h1>
+      <button class="appbar-action" id="appbarAction" hidden></button>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="content" id="content">
+      <!-- 衣橱视图 -->
+      <section class="view" id="view-wardrobe">
+        <div class="season-tabs" id="seasonTabs">
+          <button class="season-tab active" data-season="all">全部</button>
+          <button class="season-tab" data-season="spring">春季</button>
+          <button class="season-tab" data-season="summer">夏季</button>
+          <button class="season-tab" data-season="autumn">秋季</button>
+          <button class="season-tab" data-season="winter">冬季</button>
+        </div>
+        <div class="pull-refresh" id="pullRefresh"><span class="spinner"></span>下拉刷新中…</div>
+        <div class="card-grid" id="cardGrid"></div>
+      </section>
+
+      <!-- 创建穿搭视图 -->
+      <section class="view" id="view-create" hidden>
+        <div class="form">
+          <label class="field-label">穿搭季节 <span class="req">*</span></label>
+          <div class="season-picker" id="seasonPicker">
+            <button type="button" class="sp-item" data-season="spring">春</button>
+            <button type="button" class="sp-item" data-season="summer">夏</button>
+            <button type="button" class="sp-item" data-season="autumn">秋</button>
+            <button type="button" class="sp-item" data-season="winter">冬</button>
+          </div>
+          <p class="field-hint" id="seasonHint">请选择季节（必填）</p>
+
+          <label class="field-label">穿搭备注</label>
+          <textarea class="note-input" id="noteInput" placeholder="如：通勤穿搭、休闲穿搭（选填）" rows="3"></textarea>
+
+          <label class="field-label">穿搭照片</label>
+          <div class="photo-picker" id="photoPicker">
+            <label class="photo-add" id="photoAdd">
+              <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp" multiple hidden />
+              <span class="pa-plus">+</span>
+              <span class="pa-text">添加照片</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 穿搭知识列表视图 -->
+      <section class="view" id="view-knowledge" hidden>
+        <div class="season-tabs" id="catTabs"></div>
+        <div class="knowledge-list" id="knowledgeList"></div>
+      </section>
+
+      <!-- 知识编辑/详情视图 -->
+      <section class="view" id="view-knowledge-edit" hidden>
+        <div class="form">
+          <label class="field-label">知识标题</label>
+          <input type="text" class="title-input" id="kTitle" placeholder="如：小个子显高穿搭技巧" />
+          <label class="field-label">知识分类 <span class="req">*</span></label>
+          <div class="cat-picker" id="catPicker"></div>
+          <label class="field-label">详细技巧内容</label>
+          <textarea class="note-input" id="kContent" placeholder="记录你的穿搭心得…" rows="10"></textarea>
+          <button class="del-knowledge" id="kDelete" hidden>删除该条知识</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- 底部导航 -->
+    <nav class="tabbar" id="tabbar">
+      <button class="tab" data-view="wardrobe">
+        <span class="tab-ico">👗</span><span class="tab-txt">衣橱</span>
+      </button>
+      <button class="tab tab-create" id="createBtn" data-view="create">
+        <span class="tab-plus">+</span>
+      </button>
+      <button class="tab" data-view="knowledge">
+        <span class="tab-ico">📖</span><span class="tab-txt">知识</span>
+      </button>
+    </nav>
+
+    <!-- 底部操作弹窗 -->
+    <div class="sheet-mask" id="sheetMask" hidden>
+      <div class="sheet" id="sheet">
+        <button class="sheet-item danger" id="sheetDelete">删除</button>
+        <button class="sheet-item" id="sheetCancel">取消</button>
+      </div>
+    </div>
+
+    <!-- 二次确认弹窗 -->
+    <div class="dialog-mask" id="dialogMask" hidden>
+      <div class="dialog">
+        <p class="dialog-text" id="dialogText">确定删除该穿搭方案？删除后无法恢复</p>
+        <div class="dialog-actions">
+          <button class="dialog-btn cancel" id="dialogCancel">取消</button>
+          <button class="dialog-btn danger" id="dialogConfirm">确定</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 进度条弹窗 -->
+    <div class="dialog-mask" id="progressMask" hidden>
+      <div class="dialog progress-dialog">
+        <p class="dialog-text" id="progressText">正在打包…</p>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast" hidden></div>
+
+    <!-- 分类管理弹窗 -->
+    <div class="dialog-mask" id="catMask" hidden>
+      <div class="dialog cat-dialog">
+        <h3 class="cat-title">知识分类管理</h3>
+        <div class="cat-list" id="catList"></div>
+        <div class="cat-add">
+          <input type="text" id="catNewInput" class="cat-input" placeholder="输入新分类名称" maxlength="10" />
+          <button class="cat-add-btn" id="catAddBtn">添加</button>
+        </div>
+        <button class="dialog-btn cancel cat-close" id="catClose">完成</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
