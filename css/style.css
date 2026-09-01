@@ -156,7 +156,7 @@ img { -webkit-touch-callout: none; }
 .card-grid .outfit-card:nth-child(6) { animation-delay: .20s; }
 .card-grid .outfit-card:nth-child(n+7) { animation-delay: .24s; }
 .outfit-card .thumb {
-  width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block;
+  width: 100%; aspect-ratio: 9 / 16; object-fit: cover; display: block;
   background: linear-gradient(135deg, #f0f1f6, #e8eaf0);
 }
 .outfit-card .card-body { padding: 10px 12px 12px; }
@@ -172,7 +172,6 @@ img { -webkit-touch-callout: none; }
 .season-autumn { background: var(--autumn); }
 .season-winter { background: var(--winter); }
 .season-all { background: var(--accent); }
-.outfit-card .card-note { font-size: 13px; font-weight: 600; color: var(--text); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .outfit-card .card-more {
   position: absolute; top: 8px; right: 8px;
   width: 30px; height: 30px; border-radius: 50%;
@@ -192,14 +191,17 @@ img { -webkit-touch-callout: none; }
 
 /* 空状态 */
 .empty {
-  text-align: center; color: var(--text-2); padding: 80px 24px;
+  grid-column: 1 / -1;
+  text-align: center; color: var(--text-2); padding: 24px;
+  min-height: 62vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
   animation: fadeUp .4s ease both;
 }
 .empty .empty-ill {
-  width: 96px; height: 96px; margin: 0 auto 18px;
+  width: 104px; height: 104px; margin: 0 auto 18px;
   border-radius: 50%;
   background: linear-gradient(135deg, #ffe3e8, #ffd0da);
-  display: flex; align-items: center; justify-content: center; font-size: 46px;
+  display: flex; align-items: center; justify-content: center;
   box-shadow: var(--shadow-sm);
 }
 .empty .empty-text { font-size: 15px; line-height: 1.6; }
