@@ -164,7 +164,9 @@ async function renderWardrobe() {
         <div class="card-seasons">${seasonBadges(o)}</div>
       </div>`;
     card.querySelector('.card-more').onclick = (e) => { e.stopPropagation(); openCardMenu(o.id); };
-    bindLongPress(card, () => openCardMenu(o.id));
+    let longPressed = false;
+    bindLongPress(card, () => { longPressed = true; openCardMenu(o.id); });
+    card.onclick = () => { if (longPressed) { longPressed = false; return; } openLightbox(o); };
     grid.appendChild(card);
   });
 }
@@ -199,6 +201,68 @@ function bindLongPress(el, cb) {
   });
   el.addEventListener('touchend', () => clearTimeout(timer));
   el.addEventListener('touchcancel', () => clearTimeout(timer));
+}
+
+// ---------- 穿搭大图查看器 ----------
+const lightboxState = { photos: [], index: 0, urls: [] };
+
+function openLightbox(o) {
+  const photos = (o.photos || []).filter((p) => p && p.blob);
+  if (photos.length === 0) { toast('该穿搭暂无可预览的图片'); return; }
+  lightboxState.photos = photos;
+  lightboxState.index = 0;
+  lightboxState.urls = photos.map((p) => URL.createObjectURL(p.blob));
+  $('#lightbox').hidden = false;
+  renderLightbox();
+}
+
+function renderLightbox() {
+  const { photos, index, urls } = lightboxState;
+  const img = $('#lbImg');
+  img.src = urls[index];
+  // 重新触发入场动画
+  img.style.animation = 'none'; void img.offsetWidth; img.style.animation = '';
+  $('#lbCount').textContent = `${index + 1} / ${photos.length}`;
+
+  const dots = $('#lbDots');
+  dots.innerHTML = '';
+  if (photos.length > 1) {
+    photos.forEach((_, i) => {
+      const d = document.createElement('span');
+      d.className = 'lb-dot' + (i === index ? ' active' : '');
+      dots.appendChild(d);
+    });
+  }
+
+  const thumbs = $('#lbThumbs');
+  thumbs.innerHTML = '';
+  if (photos.length > 1) {
+    photos.forEach((_, i) => {
+      const t = document.createElement('button');
+      t.className = 'lb-thumb' + (i === index ? ' active' : '');
+      t.innerHTML = `<img src="${urls[i]}" alt="">`;
+      t.onclick = () => gotoLightbox(i);
+      thumbs.appendChild(t);
+    });
+    const active = thumbs.querySelector('.active');
+    if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
+  }
+}
+
+function gotoLightbox(i) {
+  const n = lightboxState.photos.length;
+  if (n === 0) return;
+  lightboxState.index = (i + n) % n;
+  renderLightbox();
+}
+
+function closeLightbox() {
+  $('#lightbox').hidden = true;
+  $('#lbImg').src = '';
+  lightboxState.urls.forEach((u) => URL.revokeObjectURL(u));
+  lightboxState.urls = [];
+  lightboxState.photos = [];
+  lightboxState.index = 0;
 }
 
 // 季节切换（带轻量 loading）
@@ -634,6 +698,29 @@ function bindEvents() {
     pr.classList.remove('show'); pr.textContent = '';
     if (wasPull && dy > 70) doRefresh();
     pullActive = false;
+  });
+
+  // 大图查看器：左右滑动切换 / 关闭 / 键盘
+  const stage = $('#lbStage');
+  let lbStartX = 0, lbStartY = 0;
+  stage.addEventListener('touchstart', (e) => {
+    lbStartX = e.touches[0].clientX; lbStartY = e.touches[0].clientY;
+  }, { passive: true });
+  stage.addEventListener('touchend', (e) => {
+    if ($('#lightbox').hidden) return;
+    const dx = e.changedTouches[0].clientX - lbStartX;
+    const dy = e.changedTouches[0].clientY - lbStartY;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
+      gotoLightbox(lightboxState.index + (dx < 0 ? 1 : -1));
+    }
+  }, { passive: true });
+  $('#lbClose').onclick = closeLightbox;
+  $('#lightbox').onclick = (e) => { if (e.target === $('#lightbox')) closeLightbox(); };
+  document.addEventListener('keydown', (e) => {
+    if ($('#lightbox').hidden) return;
+    if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowRight') gotoLightbox(lightboxState.index + 1);
+    else if (e.key === 'ArrowLeft') gotoLightbox(lightboxState.index - 1);
   });
 }
 
