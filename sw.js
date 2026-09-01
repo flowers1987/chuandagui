@@ -1,5 +1,5 @@
 // 穿搭柜 Service Worker —— 离线缓存，使「添加到主屏幕」后具备原生般的启动速度与离线可用性
-const CACHE = 'chuandagui-v2';
+const CACHE = 'chuandagui-v3';
 const ASSETS = [
   './',
   './index.html',
