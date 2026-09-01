@@ -140,7 +140,13 @@ async function renderWardrobe() {
   if (list.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'empty';
-    empty.innerHTML = `<div class="empty-ill">👕</div><div class="empty-text">暂无该季节穿搭，快去创建吧</div>`;
+    empty.innerHTML = `<div class="empty-ill">
+      <svg viewBox="0 0 64 64" width="58" height="58" aria-hidden="true">
+        <path d="M23 13 L25 8" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <path d="M41 13 L39 8" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <path d="M22 13 L25 23 L19 31 L9 53 Q32 59 55 53 L45 31 L39 23 L42 13 Q32 19 22 13 Z" fill="#fff"/>
+      </svg>
+    </div><div class="empty-text">暂无该季节穿搭，快去创建吧</div>`;
     grid.appendChild(empty);
     return;
   }
@@ -156,7 +162,6 @@ async function renderWardrobe() {
       <button class="card-more">⋯</button>
       <div class="card-body">
         <div class="card-seasons">${seasonBadges(o)}</div>
-        <p class="card-note">${o.note ? escapeHtml(o.note) : '未命名穿搭'}</p>
       </div>`;
     card.querySelector('.card-more').onclick = (e) => { e.stopPropagation(); openCardMenu(o.id); };
     bindLongPress(card, () => openCardMenu(o.id));
@@ -218,7 +223,6 @@ function enterCreate() {
   state.pendingPhotos = [];
   $('#seasonPicker').querySelectorAll('.sp-item').forEach((b) => b.classList.remove('active'));
   $('#seasonHint').textContent = '请选择穿搭季节（必填，可多选）';
-  $('#noteInput').value = '';
   renderPendingPhotos();
   showView('create');
 }
@@ -235,7 +239,6 @@ function enterEditOutfit(id) {
     }));
     $('#seasonPicker').querySelectorAll('.sp-item').forEach((b) => b.classList.toggle('active', state.createSeasons.includes(b.dataset.season)));
     $('#seasonHint').textContent = '已选择：' + state.createSeasons.map((s) => SEASON_LABEL[s]).join('、');
-    $('#noteInput').value = o.note || '';
     renderPendingPhotos();
     showView('create');
     $('#appbarTitle').textContent = '修改穿搭';
@@ -280,7 +283,6 @@ async function saveOutfit() {
   const outfit = {
     id: isEdit ? state.editingOutfitId : uid(),
     seasons: state.createSeasons.slice(),
-    note: $('#noteInput').value.trim(),
     createdAt,
     photos: state.pendingPhotos.map((p) => ({ id: p.id, name: p.name, blob: p.blob })),
   };
